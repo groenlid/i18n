@@ -59,7 +59,7 @@ export let I18N = (_temp = _class = class I18N {
 
   setLocale(locale) {
     return new Promise((resolve, reject) => {
-      let oldLocale = this.getLocale();resolve;
+      let oldLocale = this.getLocale();
       this.i18next.changeLanguage(locale, (err, tr) => {
         if (err) {
           reject(err);

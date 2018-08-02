@@ -642,7 +642,7 @@ var I18N = exports.I18N = (_temp = _class2 = function () {
     var _this4 = this;
 
     return new Promise(function (resolve, reject) {
-      var oldLocale = _this4.getLocale();resolve;
+      var oldLocale = _this4.getLocale();
       _this4.i18next.changeLanguage(locale, function (err, tr) {
         if (err) {
           reject(err);

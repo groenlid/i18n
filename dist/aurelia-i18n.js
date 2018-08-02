@@ -597,13 +597,11 @@ export class I18N {
         i18next.options.attributes = [i18next.options.attributes];
       }
 
-      if(err){
+      if (err) {
         this.i18nextDefered.reject(err);
-      }
-      else {
+      } else {
         this.i18nextDefered.resolve(this.i18next);
       }
-
     });
 
     return this.i18nextDefered.promise;
@@ -615,9 +613,9 @@ export class I18N {
 
   setLocale(locale): Promise<any> {
     return new Promise((resolve, reject) => {
-      let oldLocale = this.getLocale();resolve
+      let oldLocale = this.getLocale();
       this.i18next.changeLanguage(locale, (err, tr) => {
-        if(err){
+        if (err) {
           reject(err);
           return;
         }

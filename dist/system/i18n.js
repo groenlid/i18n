@@ -81,7 +81,7 @@ System.register(['aurelia-logging', 'i18next', 'aurelia-pal', 'aurelia-event-agg
           var _this3 = this;
 
           return new Promise(function (resolve, reject) {
-            var oldLocale = _this3.getLocale();resolve;
+            var oldLocale = _this3.getLocale();
             _this3.i18next.changeLanguage(locale, function (err, tr) {
               if (err) {
                 reject(err);
