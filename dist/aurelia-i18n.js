@@ -561,6 +561,7 @@ export class I18N {
   globalVars = {};
   params = {};
   i18nextDefered = {
+    reject: null,
     resolve: null,
     promise: null
   };
@@ -572,7 +573,10 @@ export class I18N {
     this.ea = ea;
     this.Intl = PLATFORM.global.Intl;
     this.signaler = signaler;
-    this.i18nextDefered.promise = new Promise((resolve) => this.i18nextDefered.resolve = resolve);
+    this.i18nextDefered.promise = new Promise((resolve, reject) => {
+      this.i18nextDefered.resolve = resolve;
+      this.i18nextDefered.reject = reject;
+    });
   }
 
   setup(options?): Promise<any> {
@@ -593,7 +597,13 @@ export class I18N {
         i18next.options.attributes = [i18next.options.attributes];
       }
 
-      this.i18nextDefered.resolve(this.i18next);
+      if(err){
+        this.i18nextDefered.reject(err);
+      }
+      else {
+        this.i18nextDefered.resolve(this.i18next);
+      }
+
     });
 
     return this.i18nextDefered.promise;
@@ -604,9 +614,13 @@ export class I18N {
   }
 
   setLocale(locale): Promise<any> {
-    return new Promise(resolve => {
-      let oldLocale = this.getLocale();
+    return new Promise((resolve, reject) => {
+      let oldLocale = this.getLocale();resolve
       this.i18next.changeLanguage(locale, (err, tr) => {
+        if(err){
+          reject(err);
+          return;
+        }
         this.ea.publish('i18n:locale:changed', { oldValue: oldLocale, newValue: locale });
         this.signaler.signal('aurelia-translation-signal');
         resolve(tr);
@@ -693,16 +707,23 @@ export class I18N {
     for (i = 0, l = nodes.length; i < l; i++) {
       let node = nodes[i];
       let keys;
+      let params;
       //test every attribute and get the first one that has a value
       for (let i2 = 0, l2 = this.i18next.options.attributes.length; i2 < l2; i2++) {
         keys = node.getAttribute(this.i18next.options.attributes[i2]);
+        const pname = this.i18next.options.attributes[i2] + '-params';
+
+        if (pname && node.au && node.au[pname]) {
+          params = node.au[pname].viewModel.value;
+        }
+
         if (keys) break;
       }
       //skip if nothing was found
       if (!keys) continue;
 
       //split the keys into multiple keys separated by a ;
-      this.updateValue(node, keys);
+      this.updateValue(node, keys, params);
     }
   }
 

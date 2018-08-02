@@ -17,6 +17,7 @@ export var I18N = (_temp = _class = function () {
     this.globalVars = {};
     this.params = {};
     this.i18nextDefered = {
+      reject: null,
       resolve: null,
       promise: null
     };
@@ -25,8 +26,9 @@ export var I18N = (_temp = _class = function () {
     this.ea = ea;
     this.Intl = PLATFORM.global.Intl;
     this.signaler = signaler;
-    this.i18nextDefered.promise = new Promise(function (resolve) {
-      return _this.i18nextDefered.resolve = resolve;
+    this.i18nextDefered.promise = new Promise(function (resolve, reject) {
+      _this.i18nextDefered.resolve = resolve;
+      _this.i18nextDefered.reject = reject;
     });
   }
 
@@ -48,7 +50,11 @@ export var I18N = (_temp = _class = function () {
         i18next.options.attributes = [i18next.options.attributes];
       }
 
-      _this2.i18nextDefered.resolve(_this2.i18next);
+      if (err) {
+        _this2.i18nextDefered.reject(err);
+      } else {
+        _this2.i18nextDefered.resolve(_this2.i18next);
+      }
     });
 
     return this.i18nextDefered.promise;
@@ -61,9 +67,13 @@ export var I18N = (_temp = _class = function () {
   I18N.prototype.setLocale = function setLocale(locale) {
     var _this3 = this;
 
-    return new Promise(function (resolve) {
-      var oldLocale = _this3.getLocale();
+    return new Promise(function (resolve, reject) {
+      var oldLocale = _this3.getLocale();resolve;
       _this3.i18next.changeLanguage(locale, function (err, tr) {
+        if (err) {
+          reject(err);
+          return;
+        }
         _this3.ea.publish('i18n:locale:changed', { oldValue: oldLocale, newValue: locale });
         _this3.signaler.signal('aurelia-translation-signal');
         resolve(tr);
@@ -134,15 +144,22 @@ export var I18N = (_temp = _class = function () {
     for (i = 0, l = nodes.length; i < l; i++) {
       var node = nodes[i];
       var keys = void 0;
+      var params = void 0;
 
       for (var i2 = 0, l2 = this.i18next.options.attributes.length; i2 < l2; i2++) {
         keys = node.getAttribute(this.i18next.options.attributes[i2]);
+        var pname = this.i18next.options.attributes[i2] + '-params';
+
+        if (pname && node.au && node.au[pname]) {
+          params = node.au[pname].viewModel.value;
+        }
+
         if (keys) break;
       }
 
       if (!keys) continue;
 
-      this.updateValue(node, keys);
+      this.updateValue(node, keys, params);
     }
   };
 
